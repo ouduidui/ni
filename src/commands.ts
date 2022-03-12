@@ -3,6 +3,7 @@ import { Agent, AGENTS, Command } from './agents'
 import { exclude } from './utils'
 import { Runner } from './runner'
 
+// 获取命令行
 export function getCommand(
   agent: Agent,
   command: Command,
@@ -11,16 +12,20 @@ export function getCommand(
   if (!(agent in AGENTS))
     throw new Error(`Unsupported agent "${agent}"`)
 
+  // 找到该适配器的命令
   const c = AGENTS[agent][command]
 
+  // 如果是函数，直接执行
   if (typeof c === 'function')
     return c(args)
 
   if (!c)
     throw new Error(`Command "${command}" is not support by agent "${agent}"`)
+  // 返回命令行
   return c.replace('{0}', args.join(' ')).trim()
 }
 
+// install命令
 export const parseNi = <Runner>((agent, args, ctx) => {
   if (args.length === 1 && args[0] === '-v') {
     // eslint-disable-next-line no-console

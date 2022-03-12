@@ -14,6 +14,7 @@ export function exclude<T>(arr: T[], v: T) {
   return remove(arr.slice(), v)
 }
 
+// 判断bin是否存在
 export function cmdExists(cmd: string) {
   try {
     // #8

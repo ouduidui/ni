@@ -12,9 +12,11 @@ export interface DetectOptions {
   cwd?: string
 }
 
+// 判断当前项目的包管理工作
 export async function detect({ autoInstall, cwd }: DetectOptions) {
   let agent: Agent | null = null
 
+  // 找到项目下的lock文件
   const lockPath = await findUp(Object.keys(LOCKS), { cwd })
   let packageJsonPath: string | undefined
 
@@ -24,6 +26,7 @@ export async function detect({ autoInstall, cwd }: DetectOptions) {
     packageJsonPath = await findUp('package.json', { cwd })
 
   // read `packageManager` field in package.json
+  // 读取package.json，判断是否有packageManager选项
   if (packageJsonPath && fs.existsSync(packageJsonPath)) {
     try {
       const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
@@ -41,10 +44,12 @@ export async function detect({ autoInstall, cwd }: DetectOptions) {
   }
 
   // detect based on lock
+  // 如果package.json中没有packageManager选项，则通过lock文件判断包管理器
   if (!agent && lockPath)
     agent = LOCKS[path.basename(lockPath)]
 
   // auto install
+  // 判断该包管理器是否存在
   if (agent && !cmdExists(agent.split('@')[0])) {
     if (!autoInstall) {
       console.warn(`[ni] Detected ${agent} but it doesn't seem to be installed.\n`)
@@ -53,6 +58,7 @@ export async function detect({ autoInstall, cwd }: DetectOptions) {
         process.exit(1)
 
       const link = terminalLink(agent, INSTALL_PAGE[agent])
+      // 提问是否要尝试安装该包管理工具
       const { tryInstall } = await prompts({
         name: 'tryInstall',
         type: 'confirm',
@@ -62,6 +68,7 @@ export async function detect({ autoInstall, cwd }: DetectOptions) {
         process.exit(1)
     }
 
+    // 自动安装该包管理工具
     await execa.command(`npm i -g ${agent}`, { stdio: 'inherit', cwd })
   }
 
